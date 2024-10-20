@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/konva@8.1.1/konva.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js" integrity="sha384-fbbOQedDUMZZ5KreZpsbe1LCZPVmfTnH7ois6mU1QK+m14rQ1l2bGBq41eYeM/fS" crossorigin="anonymous"></script>
+    <title>Node Editor</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #555;
+            color: #fff;
+        }
+        
+        .navbar_self {
+            height: 50px;
+            background-color: #333;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-top: 35px;
+            padding-bottom: 35px;
+            border-bottom: 2px solid #555;
+        }
+        
+        .content_basic {
+            display: flex;
+            height: calc(100vh - 50px); /* Subtracting navbar height from viewport height */
+            padding-bottom: 22px;
+        }
+        
+        .column_self {
+            flex: 1;
+            padding: 20px;
+            background-color: #797878;
+            border: 2px solid #555;
+            padding-bottom: 0px;
+            padding-top: 0px;
+            padding-right: 0px;
+            padding-left: 0px;
+            margin-bottom: 0px;
+        }
+        
+        .centered-button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+        
+        /* Button */
+        button {
+            position: relative;
+            border: none;
+            background: transparent;
+            padding: 0;
+            cursor: pointer;
+            outline-offset: 4px;
+            transition: filter 250ms;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .shadow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            background: hsl(0deg 0% 0% / 0.25);
+            will-change: transform;
+            transform: translateY(2px);
+            transition: transform
+                600ms
+                cubic-bezier(.3, .7, .4, 1);
+        }
+
+        .edge {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            background: linear-gradient(
+                to left,
+                hsl(340deg 100% 16%) 0%,
+                hsl(340deg 100% 32%) 8%,
+                hsl(340deg 100% 32%) 92%,
+                hsl(340deg 100% 16%) 100%
+            );
+        }
+
+        .front {
+            display: block;
+            position: relative;
+            padding: 12px 27px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            color: white;
+            background: hsl(345deg 100% 47%);
+            will-change: transform;
+            transform: translateY(-4px);
+            transition: transform
+                600ms
+                cubic-bezier(.3, .7, .4, 1);
+        }
+
+        button:hover {
+            filter: brightness(110%);
+        }
+
+        button:hover .front {
+            transform: translateY(-6px);
+            transition: transform
+                250ms
+                cubic-bezier(.3, .7, .4, 1.5);
+        }
+
+        button:active .front {
+            transform: translateY(-2px);
+            transition: transform 34ms;
+        }
+
+        button:hover .shadow {
+            transform: translateY(4px);
+            transition: transform
+                250ms
+                cubic-bezier(.3, .7, .4, 1.5);
+        }
+
+        button:active .shadow {
+            transform: translateY(1px);
+            transition: transform 34ms;
+        }
+
+        button:focus:not(:focus-visible) {
+            outline: none;
+        }
+
+        /* Cards div */
+        .card_contianer{
+            width: 100%;
+            /* display: flex;
+            flex-wrap: wrap; */
+            /* justify-content: center;
+            align-items: center; */
+        }
+
+        .container .item {
+            flex: 1;
+        }
+
+        /* cards */
+        .card {
+            --background: linear-gradient(to left, #f7ba2b 0%, #ea5358 100%);
+            width: 100px;
+            height: 100px;
+            padding: 5px;
+            margin: 5px;
+            border-radius: 1rem;
+            overflow: visible;
+            background: #f7ba2b;
+            background: var(--background);
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card::after {
+            position: absolute;
+            content: "";
+            top: 30px;
+            left: 0;
+            right: 0;
+            z-index: -1;
+            height: 100%;
+            width: 100%;
+            transform: scale(0.8);
+            filter: blur(25px);
+            background: #f7ba2b;
+            background: var(--background);
+            transition: opacity .5s;
+        }
+
+        .card-info {
+            --color: #181818;
+            background: var(--color);
+            color: var(--color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+            border-radius: .7rem;
+        }
+
+        .card .title {
+            font-weight: bold;
+            letter-spacing: .1em;
+        }
+
+        /*Hover*/
+        .card:hover::after {
+            opacity: 0;
+        }
+
+        .card .card-info {
+            color: #f7ba2b;
+            transition: color 1s;
+        }
+    </style>
+</head>
+<body>
+    <!-- Modal -->
+    <div class="modal fade" id="code_modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="exampleModalLabel">Genrated Code</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modal_body">
+              ...
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <div class="navbar_self">
+        <button id="but_gen">
+            <span class="shadow"></span>
+                <span class="edge"></span>
+                <span class="front text"> Genrate Code
+            </span>
+        </button>
+    </div>
+    <div class="content_basic">
+        <div class="column_self" style="flex: 1; border-radius: 0px 25px 15px 10px;">
+            <div class="d-flex justify-content-between flex-wrap">
+
+                <div class="card" id="input_btn">
+                    <div class="card-info">
+                      <span class="title" >Input</span>
+                    </div>
+                </div>
+                <div class="card" id="output_btn">
+                    <div class="card-info">
+                      <span class="title">Output</span>
+                    </div>
+                </div>
+                <div class="card" id="llm_btn">
+                    <div class="card-info">
+                      <span class="title">LLM</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="column_self" style="flex: 5; border-radius: 25px 0px 10px 15px; background-image: 'C:\Users\Jeswin Johnson\Desktop\download.png';" id="editor" ></div>
+    </div>
+
+    <script>
+        // Stage and layer initiation
+        var stage = new Konva.Stage({
+            container: 'editor',
+            width: document.getElementById("editor").clientWidth,
+            height: document.getElementById("editor").clientHeight,
+            draggable: true
+        });
+
+        var layer = new Konva.Layer();
+        stage.add(layer);
+
+        // start node
+        function start_node(x, y){
+            // Object
+            var group = new Konva.Group({
+                x: x,
+                y: y,
+                draggable: true,
+            })
+
+            // Body
+            var body = new Konva.Circle({
+                radius: 50,
+                fill: 'red',
+            });
+
+            // Text
+            var text = new Konva.Text({
+                text: 'Start',
+                fill: 'black',
+                offsetX: 12,
+                offsetY: 5,
+            })
+
+            // Add event listeners for node interactions
+            group.on('mouseover', function() {
+                document.body.style.cursor = 'pointer';
+            });
+            group.on('mouseout', function() {
+                document.body.style.cursor = 'default';
+            });
+
+            // Add event listener for if the body is pressed
+            body.on("mousedown", function(){
+                connection_fullfilment({
+                    obj: group,
+                    node: {x:0, y:0},
+                    node_id: "start",
+                    is_input: false,
+                    type: "power",
+                    parent_id: "start"
+                })
+            })
+
+            // On draging the node update connections
+            group.on('dragmove', function() {
+                updateConnections();
+                layer.batchDraw();
+            });
+
+            // Rendering
+            group.add(body)
+            group.add(text)
+            layer.add(group)
+            layer.draw();
+        }
+
+        // stop node
+        function stop_node(x, y){
+            // Object
+            var group = new Konva.Group({
+                x: x,
+                y: y,
+                draggable: true,
+            })
+
+            // Body
+            var body = new Konva.Circle({
+                radius: 50,
+                fill: 'red',
+            });
+
+            // Text
+            var text = new Konva.Text({
+                text: 'Stop',
+                fill: 'black',
+                offsetX: 12,
+                offsetY: 5,
+            })
+
+            // Add event listeners for node interactions
+            group.on('mouseover', function() {
+                document.body.style.cursor = 'pointer';
+            });
+            group.on('mouseout', function() {
+                document.body.style.cursor = 'default';
+            });
+
+            // Add event listener for if the body is pressed
+            body.on("mousedown", function(){
+                connection_fullfilment({
+                    obj: group,
+                    node: {x:0, y:0},
+                    node_id: "stop",
+                    is_input: true,
+                    type: "power",
+                    parent_id: "stop"
+                })
+            })
+
+            // On draging the node update connections
+            group.on('dragmove', function() {
+                updateConnections();
+                layer.batchDraw();
+            });
+
+            // Rendering
+            group.add(body)
+            group.add(text)
+            layer.add(group)
+            layer.draw();
+        }
+
+        // input node
+        function input_node(x, y){
+
+            // Updating the directory count
+            parent_id_dir = parent_id_dir + 1
+            let this_id = parent_id_dir
+
+            // Object
+            var group = new Konva.Group({
+                x: x,
+                y: y,
+                draggable: true,
+            })
+
+            // Body
+            var body = new Konva.Rect({
+                height: 200,
+                width: 150,
+                fill: 'orange',
+                cornerRadius: 13
+            });
+
+            // Power Input Node
+            var node1 = new Konva.Circle({
+                offsetY: -45,
+                offsetX: 0,
+                radius: 35,
+                fill: 'blue',
+            });
+
+            // Activation of node1
+            node1.on("mousedown", function(){
+                connection_fullfilment({
+                    obj: group,
+                    node: {x:0, y:45},
+                    node_id: "power_in_",
+                    is_input: true,
+                    type: "power",
+                    parent_id: this_id,
+                    node_type: "input"
+                })
+            })
+
+            // Power Output Node
+            var node2 = new Konva.Circle({
+                offsetY: -45,
+                offsetX: -150,
+                radius: 35,
+                fill: 'blue',
+            });
+
+            // Activation of node2
+            node2.on("mousedown", function(){
+                connection_fullfilment({
+                    obj: group,
+                    node: {x:150, y:45},
+                    node_id: "power_out_",
+                    is_input: false,
+                    type: "power",
+                    parent_id: this_id,
+                    node_type: "input"
+                })
+            })
+
+            //Output Node
+            var node3 = new Konva.Circle({
+                offsetY: -125,
+                offsetX: -150,
+                radius: 35,
+                fill: 'red',
+            });
+
+            // Activation of Output node
+            node3.on("mousedown", function(){
+                connection_fullfilment({
+                    obj: group,
+                    node: {x:150, y:125},
+                    node_id: "output_1_",
+                    is_input: false,
+                    type: "text",
+                    parent_id: this_id,
+                    node_type: "input"
+                })
+            })
+
+            // Text
+            var main_text = new Konva.Text({
+                text: 'Input Node',
+                fill: 'black',
+                offsetX: -50,
+                offsetY: -185,
+                fontStyle: "bold"
+            })
+
+            var in_text = new Konva.Text({
+                text: 'Power In',
+                fill: 'black',
+                offsetX: -5,
+                offsetY: -40,
+            })
+
+            var out_text = new Konva.Text({
+                text: 'Power Out',
+                fill: 'black',
+                offsetX: -90,
+                offsetY: -40,
+            })
+
+            var txt_out_text = new Konva.Text({
+                text: 'Text Output',
+                fill: 'black',
+                offsetX: -85,
+                offsetY: -120,
+            })
+
+            // Add event listeners for node interactions
+            group.on('mouseover', function() {
+                document.body.style.cursor = 'pointer';
+            });
+            group.on('mouseout', function() {
+                document.body.style.cursor = 'default';
+            });
+
+            // On draging the node update connections
+            group.on('dragmove', function() {
+                updateConnections();
+                layer.batchDraw();
+            });
+
+            // Rendering
+            group.add(node1)
+            group.add(node2)
+            group.add(node3)
+            group.add(body)
+            group.add(main_text)
+            group.add(in_text)
+            group.add(out_text)
+            group.add(txt_out_text)
+
+            layer.add(group)
+            layer.draw();
+        }
+
+        // LLM node
+        function llm_node(x, y){
+
+            // Updating the directory count
+            parent_id_dir = parent_id_dir + 1
+            let this_id = parent_id_dir
+
+            // Object
+            var group = new Konva.Group({
+                x: x,
+                y: y,
+                draggable: true,
+            })
+
+            // Body
+            var body = new Konva.Rect({
+                height: 200,
+                width: 150,
+                fill: 'orange',
+                cornerRadius: 13
+            });
+
+            // Power Input Node
+            var node1 = new Konva.Circle({
+                offsetY: -45,
+                offsetX: 0,
+                radius: 35,
+                fill: 'blue',
+            });
+
+            // Activation of node1
+            node1.on("mousedown", function(){
+                connection_fullfilment({
+                    obj: group,
+                    node: {x:0, y:45},
+                    node_id: "power_in_",
+                    is_input: true,
+                    type: "power",
+                    parent_id: this_id,
+                    node_type: "llm"
+                })
+            })
+
+            // Power Output Node
+            var node2 = new Konva.Circle({
+                offsetY: -45,
+                offsetX: -150,
+                radius: 35,
+                fill: 'blue',
+            });
+
+            // Activation of node2
+            node2.on("mousedown", function(){
+                connection_fullfilment({
+                    obj: group,
+                    node: {x:150, y:45},
+                    node_id: "power_out_",
+                    is_input: false,
+                    type: "power",
+                    parent_id: this_id,
+                    node_type: "llm"
+                })
+            })
+
+            //Output Node
+            var node3 = new Konva.Circle({
+                offsetY: -125,
+                offsetX: -150,
+                radius: 35,
+                fill: 'red',
+            });
+
+            // Activation of node3
+            node3.on("mousedown", function(){
+                connection_fullfilment({
+                    obj: group,
+                    node: {x:150, y:125},
+                    node_id: "output_1_",
+                    is_input: false,
+                    type: "text",
+                    parent_id: this_id,
+                    node_type: "llm"
+                })
+            })
+
+            //Input Node
+            var node4 = new Konva.Circle({
+                offsetY: -125,
+                offsetX: 0,
+                radius: 35,
+                fill: 'red',
+            });
+
+            // Activation of node4
+            node4.on("mousedown", function(){
+                connection_fullfilment({
+                    obj: group,
+                    node: {x:0, y:125},
+                    node_id: "input_1_",
+                    is_input: true,
+                    type: "text",
+                    parent_id: this_id,
+                    node_type: "llm"
+                })
+            })
+
+            // Text
+            var main_text = new Konva.Text({
+                text: 'LLM Node',
+                fill: 'black',
+                offsetX: -50,
+                offsetY: -185,
+                fontStyle: "bold"
+            })
+
+            var in_text = new Konva.Text({
+                text: 'Power In',
+                fill: 'black',
+                offsetX: -5,
+                offsetY: -40,
+            })
+
+            var out_text = new Konva.Text({
+                text: 'Power Out',
+                fill: 'black',
+                offsetX: -90,
+                offsetY: -40,
+            })
+
+            var txt_out_text = new Konva.Text({
+                text: 'Text Output',
+                fill: 'black',
+                offsetX: -85,
+                offsetY: -120,
+            })
+
+            var txt_in_text = new Konva.Text({
+                text: 'Text Input',
+                fill: 'black',
+                offsetX: -5,
+                offsetY: -120,
+            })
+
+            // Add event listeners for node interactions
+            group.on('mouseover', function() {
+                document.body.style.cursor = 'pointer';
+            });
+            group.on('mouseout', function() {
+                document.body.style.cursor = 'default';
+            });
+
+            // On draging the node update connections
+            group.on('dragmove', function() {
+                updateConnections();
+                layer.batchDraw();
+            });
+
+            // Rendering
+            group.add(node1)
+            group.add(node2)
+            group.add(node3)
+            group.add(node4)
+            group.add(body)
+            group.add(main_text)
+            group.add(in_text)
+            group.add(out_text)
+            group.add(txt_out_text)
+            group.add(txt_in_text)
+
+            layer.add(group)
+            layer.draw();
+        }
+
+        // output node
+        function output_node(x, y){
+
+            // Updating the directory count
+            parent_id_dir = parent_id_dir + 1
+            let this_id = parent_id_dir
+
+            // Object
+            var group = new Konva.Group({
+                x: x,
+                y: y,
+                draggable: true,
+            })
+
+            // Body
+            var body = new Konva.Rect({
+                height: 200,
+                width: 150,
+                fill: 'orange',
+                cornerRadius: 13
+            });
+
+            // Power Input Node
+            var node1 = new Konva.Circle({
+                offsetY: -45,
+                offsetX: -0,
+                radius: 35,
+                fill: 'blue',
+            });
+
+            // Activation of node1
+            node1.on("mousedown", function(){
+                connection_fullfilment({
+                    obj: group,
+                    node: {x:0, y:45},
+                    node_id: "power_in_",
+                    is_input: true,
+                    type: "power",
+                    parent_id: this_id,
+                    node_type: "output"
+                })
+            })
+
+            // Power Output Node
+            var node2 = new Konva.Circle({
+                offsetY: -45,
+                offsetX: -150,
+                radius: 35,
+                fill: 'blue',
+            });
+
+            // Activation of node2
+            node2.on("mousedown", function(){
+                connection_fullfilment({
+                    obj: group,
+                    node: {x:150, y:45},
+                    node_id: "power_out_",
+                    is_input: false,
+                    type: "power",
+                    parent_id: this_id,
+                    node_type: "output"
+                })
+            })
+
+            //Output Node
+            var node3 = new Konva.Circle({
+                offsetY: -125,
+                offsetX: 0,
+                radius: 35,
+                fill: 'red',
+            });
+
+            // Activation of node3
+            node3.on("mousedown", function(){
+                connection_fullfilment({
+                    obj: group,
+                    node: {x:0, y:125},
+                    node_id: "input_1_",
+                    is_input: true,
+                    type: "text",
+                    parent_id: this_id,
+                    node_type: "output"
+                })
+            })
+
+            // Text
+            var main_text = new Konva.Text({
+                text: 'Ouput Node',
+                fill: 'black',
+                offsetX: -50,
+                offsetY: -185,
+                fontStyle: "bold"
+            })
+
+            var in_text = new Konva.Text({
+                text: 'Power In',
+                fill: 'black',
+                offsetX: -5,
+                offsetY: -40,
+            })
+
+            var out_text = new Konva.Text({
+                text: 'Power Out',
+                fill: 'black',
+                offsetX: -90,
+                offsetY: -40,
+            })
+
+            var txt_in_text = new Konva.Text({
+                text: 'Text Input',
+                fill: 'black',
+                offsetX: -5,
+                offsetY: -120,
+            })
+
+            // Add event listeners for node interactions
+            group.on('mouseover', function() {
+                document.body.style.cursor = 'pointer';
+            });
+            group.on('mouseout', function() {
+                document.body.style.cursor = 'default';
+            });
+
+            // On draging the node update connections
+            group.on('dragmove', function() {
+                updateConnections();
+                layer.batchDraw();
+            });
+
+            // Rendering
+            group.add(node1)
+            group.add(node2)
+            group.add(node3)
+            group.add(body)
+            group.add(in_text)
+            group.add(out_text)
+            group.add(txt_in_text)
+            group.add(main_text)
+
+            layer.add(group)
+            layer.draw();
+        }
+
+        // All code below are for connections and their managment
+        // All code above are the individual nodes are thier properties
+        // Checks if all the conditions are met before funtion connection
+        function connection_fullfilment(args){ 
+            if(!connection_mode){
+                connection_mode = true
+                semi_connection(args)
+                current_node = args
+            }else{
+                connection_mode = false
+                semi_connection_line.remove()
+
+                // Make the fullfilment system and conenction maker
+                // Conditions
+                // Same type: Accepted
+                // Same node: Rejected
+                // Is it a input to input: Rejected
+                // Is it a output to output: Rejected
+                // Multiple same connection: Rejected
+                // Multiple inputs: Rejected
+                // Power: only one connection
+
+                // Same type
+                if(args.type === current_node.type){
+                    // Same node
+                    if(!(args.parent_id === current_node.parent_id)){
+                        // Input-Input / Output-Output
+                        if(!(args.is_input === current_node.is_input)){
+                            // A loop to go through the list to find multiples
+
+                            // This varible will tell the if statement whether the conditions are fullfilled or not
+                            var cond_pass = true
+
+                            for(var i=0; i<connections.length; i++){
+                                var item = connections[i]
+
+                                // Multiple same connections
+                                // Same nodes varibale checks if both the the nodes are alredy in the registry
+                                var same_nodes = ((args.parent_id === item.node1.parent_id) || (args.parent_id === item.node2.parent_id)) && ((current_node.parent_id === item.node1.parent_id) || (current_node.parent_id === item.node2.parent_id))
+                                // Same sockets variable check if both the nodes sockets are alredy in the registry
+                                var same_sockets = ((args.node_id === item.node1.node_id) || (args.node_id === item.node2.node_id)) && ((current_node.node_id === item.node1.node_id) || (current_node.node_id === item.node2.node_id))
+                                if(same_nodes && same_sockets){
+                                    cond_pass = false
+                                }
+
+                                // Check if it is power then make sure no multiple power connections are made
+                                if(args.type === "power"){
+                                    var power_connection = (args.parent_id === item.node1.parent_id && args.node_id === item.node1.node_id) || (args.parent_id === item.node2.parent_id && args.node_id === item.node2.node_id) || (current_node.parent_id === item.node1.parent_id && current_node.node_id === item.node1.node_id) || (current_node.parent_id === item.node2.parent_id && current_node.node_id === item.node2.node_id)
+                                    if(power_connection){
+                                        cond_pass = false
+                                    }
+                                
+                                }else{
+                                    // Checks if any of then is a input
+                                    // Then we take the input node and its socket and check if there has been a connection made to the same socket and node
+                                    if(args.is_input){
+                                        var input_connection = ((args.parent_id === item.node1.parent_id && args.node_id === item.node1.node_id) || (args.parent_id === item.node2.parent_id && args.node_id === item.node2.node_id))
+                                        if(input_connection){
+                                            cond_pass = false
+                                        }
+                                    }else if(current_node.is_input){
+                                        var input_connection = ((current_node.parent_id === item.node1.parent_id && current_node.node_id === item.node1.node_id) || (current_node.parent_id === item.node2.parent_id && current_node.node_id === item.node2.node_id))
+                                        cond_pass = false
+                                    }
+                                }
+                            }
+
+                            if(cond_pass){
+                                createConnection(current_node, args)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // This funtion finds coordinated between points
+        function findCoordinatesBetweenPoints(points, numPoints) {
+            if (points.length < 2) {
+                throw new Error("At least two points are required.");
+            }
+
+            const coordinates = [];
+
+            for (let i = 0; i < points.length - 1; i++) {
+                const x1 = points[i].x;
+                const y1 = points[i].y;
+                const x2 = points[i + 1].x;
+                const y2 = points[i + 1].y;
+
+                // Calculate the distance between the two points
+                const totalDistance = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+
+                // Calculate the distance between each point
+                const segmentDistance = totalDistance / (numPoints + 1);
+
+                // Calculate the differences between the x and y coordinates
+                const dx = x2 - x1;
+                const dy = y2 - y1;
+
+                for (let j = 1; j <= numPoints; j++) {
+                // Calculate the differences between the x and y coordinates of the unknown point
+                const dxUnknown = (segmentDistance * j * dx) / totalDistance;
+                const dyUnknown = (segmentDistance * j * dy) / totalDistance;
+
+                // Calculate the coordinates of the unknown point
+                const xUnknown = x1 + dxUnknown;
+                const yUnknown = y1 + dyUnknown;
+
+                coordinates.push(xUnknown, yUnknown);
+                }
+            }
+
+            return coordinates;
+            }
+
+        // semi connection mode
+        function semi_connection(args){
+            // pointer position
+            var pos = stage.getPointerPosition();
+
+
+            known_points_list = [{
+                x: args["obj"].position()["x"] + args["node"]["x"],
+                y: args["obj"].position()["y"] + args["node"]["y"]
+            },{
+                x: pos.x - x_offset,
+                y: pos.y-y_offset
+            }]
+
+            computed_points_list = findCoordinatesBetweenPoints(known_points_list, 5)
+            computed_points_list.unshift(known_points_list[0].x,known_points_list[0].y)
+            computed_points_list.push(known_points_list[1].x,known_points_list[1].y)
+
+            // making the line
+            var connection = new Konva.Line({
+                points: computed_points_list,
+                strokeWidth: 2,
+                dash: [5]
+            });
+
+            if(args.type === "power"){
+                connection.stroke("blue")
+            }else if(args.type === "text"){
+                connection.stroke("purple")
+            }
+
+            // Rendering the line
+            layer.add(connection);
+            semi_connection_line = connection
+
+            // On mouse move
+            stage.on('mousemove', function() {
+                if(connection_mode){
+                    // pointer position
+                    var pos = stage.getPointerPosition();
+
+                    known_points_list = [{
+                        x: args["obj"].position()["x"] + args["node"]["x"],
+                        y: args["obj"].position()["y"] + args["node"]["y"]
+                    },{
+                        x: pos.x - x_offset,
+                        y: pos.y-y_offset
+                    }]
+
+                    computed_points_list = findCoordinatesBetweenPoints(known_points_list, 5)
+                    computed_points_list.unshift(known_points_list[0].x,known_points_list[0].y)
+                    computed_points_list.push(known_points_list[1].x,known_points_list[1].y)
+
+                    
+                    // Position Update
+                    connection.points(computed_points_list)
+
+            
+                    // If they click somewhere else the connection is removed
+                    stage.on('dblclick', function() {
+                        connection.remove()
+                        connection_mode = false
+                    })
+                }
+            })
+        }
+
+        // Create connection
+        function createConnection(node1, node2){
+            // Creating the line
+            var connection = new Konva.Line({
+                points: [node1["obj"].position()["x"] + node1["node"]["x"], node1["obj"].position()["y"] + node1["node"]["y"],node2["obj"].position()["x"] + node2["node"]["x"], node2["obj"].position()["y"] + node2["node"]["y"]],
+                strokeWidth: 4
+            });
+
+            if(node1.type === "power"){
+                connection.stroke("#30fc03")
+            }else if(node1.type === "text"){
+                connection.stroke("purple")
+            }
+
+            // Change the cursor to pointer when the mouse is over the line
+            connection.on("mouseover", function(){
+                document.body.style.cursor = 'pointer';
+            })
+            connection.on("mouseout", function(){
+                document.body.style.cursor = 'default';
+            })
+
+            // Remove the Line on clicking on it
+            connection.on('mousedown', function(){
+                // Checks for the dictionary having that has registered the nodes and connection line and delets it to maintain a clean record
+                for(var i=0; i<connections.length; i++){
+                a = connections[i]
+                if(a.connection === connection){
+                    connections.splice(i,1)
+                }
+                }
+                connection.remove();
+            })
+
+            // Add the connection to the directory
+            connections.push({node1:node1, node2:node2, connection:connection})
+
+            // Rendering the line
+            layer.add(connection)
+        }
+
+        // Function to update connections
+        function updateConnections() {
+            // takeing each node connection for updating
+            for (var i = 0; i < connections.length; i++) {
+                var node1 = connections[i].node1;
+                var node2 = connections[i].node2;
+                var connection = connections[i].connection;
+
+                // taking the new postion of respective group and adding the node offset to match position
+                var points = [
+                node1.obj.position()["x"] + node1.node.x,
+                node1.obj.position()["y"] + node1.node.y,
+                node2.obj.position()["x"] + node2.node.x,
+                node2.obj.position()["y"] + node2.node.y
+                ];
+
+                // updating the line
+                connection.points(points);
+            }
+        }
+        
+        // Keeps count of the number of nodes
+        var parent_id_dir = 0
+
+        // Node record keeps the information of node types. like how many input outputs and what is their code
+        var node_record = {
+            "input":{"input":0, "output":1, code:"{out_1} = input('input')"},
+            "llm":{"input":1, "output":1, code:"{out_1} = llm({in_1})"},
+            "output":{"input":1, "output":0, code:"print({in_1})"},
+        }
+
+        // To keep track of the in between stages
+        var connection_mode = false
+        var current_node
+        var semi_connection_line
+
+        // Change the refernce points to adjust for the mouse movement
+        var x_offset = 0
+        var y_offset = 0
+        stage.on("dragmove", function(){
+            x_offset = stage.absolutePosition().x
+            y_offset = stage.absolutePosition().y
+        })
+
+        // The line directory (This keeps track of all the connections made in the system)
+        var connections = []
+
+        // The serialiser funtion: it recives a list of all the connections made to each other and spits out python code
+        function serialiser(connection_list){
+            // serialised data list stores all the node information and thier information in order of thier connections
+            var serilaised_data = []
+            // power pointer is a varibale that moves around, it will start from "start" then go to the next node that start is connected to from there to next such that it keeps state of each power position
+            var power_pointer = "start"
+
+            // pointer finder take's in the list of all the connections then the node_id, it takes both of them and gives the node information where the given node is connected to
+            function pointer_finder(connection_list, pointer){
+                for(var i=0; i<connection_list.length; i++){
+                    var connection = connection_list[i]
+                    if(connection.node1.parent_id === pointer && (connection.node2.node_id === "power_in_" || connection.node2.node_id === "stop")){
+                        return connection.node2
+                    }else if(connection.node2.parent_id === pointer && (connection.node1.node_id === "power_in_" || connection.node1.node_id === "stop")){
+                        return connection.node1
+                    }
+                }
+            }
+
+            // This funtion returns the varibale name of where the input node is connected to
+            function previous_connection_finder(parentID, con_num, connections){
+                // it goes through the list and checks which connection has the given particular then checks where is it connected to and then merges the node name with the parent id and returns it
+                for(var i=0; i<connections.length; i++){
+                    var connection = connections[i]
+                    if(connection.node1.parent_id === parentID && connection.node1.node_id === `input_${con_num}_`){
+                        return connection.node2.node_id + connection.node2.parent_id.toString()
+                    } else if(connection.node2.parent_id === parentID && connection.node2.node_id === `input_${con_num}_`){
+                        return connection.node1.node_id + connection.node1.parent_id.toString()
+                    }
+                }
+            }
+            
+            // parent_id_dir has total number of node
+
+            // Script variable strors the compiled script
+            var script = ""
+
+            // It iterates for how many nodes are there, and then find which is conneted to the next
+            for(var i = 0; i <= parent_id_dir; i++){
+                // This find what is the previous node connected to and upadtes the pointer
+                var a = pointer_finder(connection_list, power_pointer)
+                power_pointer = a.parent_id
+
+                // if the previous node is connected to stop then end the cycle
+                if(a.parent_id === "stop"){
+                    break
+                }else{
+                    // Else then look up what kind of node it is and how many inputs and outputs it has with its code
+                    // Node information retrival
+                    var nodeInfo = node_record[a.node_type]
+
+                    // A temprovary script holder
+                    tmp_script = nodeInfo.code
+
+                    // First we change the outputs to the format of out_{which output of the node}_{parent id} and update the temproary script
+                    for(var i=0; i<nodeInfo.output; i++){
+                        tmp_script = tmp_script.replace(`{out_${i+1}}`, `output_${i+1}_${a.parent_id}`)
+                    }
+
+                    // It uses the previous_connection_finder and checks where it is connected to and then replaces the value
+                    for(var i=0; i<nodeInfo.input; i++){
+                        var prev_con = previous_connection_finder(a.parent_id, i+1, connection_list)
+                        tmp_script = tmp_script.replace(`{in_${i+1}}`, prev_con)
+                    }
+
+                    // Update the script
+                    script = script + "\n" + tmp_script
+                }
+            }
+
+            // Opening and presenting the modal
+            $("#modal_body").html(`<p style="white-space: pre-line;">${script}</p>`)
+            $("#code_modal").modal("show")
+        };
+
+    
+        // Node genration
+        $("#input_btn").on("click", function(){
+            input_node(100 - x_offset, 100 - y_offset);
+        })
+
+        $("#output_btn").on("click", function(){
+            output_node(100 - x_offset, 100 - y_offset);
+        })
+
+        $("#llm_btn").on("click", function(){
+            llm_node(100 - x_offset, 100 - y_offset);
+        })
+
+        // If the genrate button is called
+        $("#but_gen").on("click", function(){
+            serialiser(connections)
+        })
+
+        // Scrolling
+        // Function to handle mouse wheel event
+        function handleMouseWheel(e) {
+            e.preventDefault();
+
+            var scaleBy = 1.2;
+            var oldScale = stage.scaleX();
+            var mousePointTo = {
+                x: stage.getPointerPosition().x / oldScale - stage.x() / oldScale,
+                y: stage.getPointerPosition().y / oldScale - stage.y() / oldScale
+            };
+
+            var newScale;
+            if (e.deltaY < 0) {
+                newScale = oldScale * scaleBy;
+            } else {
+                newScale = oldScale / scaleBy;
+            }
+
+            stage.scale({ x: newScale, y: newScale });
+
+            var newPos = {
+                x: -(mousePointTo.x - stage.getPointerPosition().x / newScale) * newScale,
+                y: -(mousePointTo.y - stage.getPointerPosition().y / newScale) * newScale
+            };
+            stage.position(newPos);
+            stage.batchDraw();
+        }
+
+        // Event listener for mouse wheel
+        document.getElementById('editor').addEventListener('wheel', handleMouseWheel);
+        
+        // Start and end node genration in the begining
+        start_node(100,100)
+        stop_node(500,100)
+    </script>
+</body>
+</html>
